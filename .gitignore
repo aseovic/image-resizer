@@ -7,3 +7,24 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+
+# testing
+coverage
+
+# production
+build
+babel_cache
+
+# misc
+.DS_Store
+.env
+npm-debug.log
+
+# IntelliJ
+image-resizer.iml
+image-resizer.ipr
+image-resizer.iws
