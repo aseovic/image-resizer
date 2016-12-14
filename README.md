@@ -30,9 +30,7 @@ will compile React application into a single JavaScript bundle for production, a
 ```
 npm start
 ```
-will start the application server and allow you to access the application at 
-
-http://localhost:3000/
+will start the application server and allow you to access the application at http://localhost:3000/
 
 Note that ImageMagic must be installed on your local machine in order for the application to work.
 On Mac OS X, this is easily accomplished by running
@@ -52,9 +50,7 @@ and then run the created Docker image using
 npm run docker:run
 ```
 
-The above will start the application inside of Docker and allow you to access it at
- 
-http://localhost:8080/
+The above will start the application inside of Docker and allow you to access it at http://localhost:8080/
 
 Note that in this case you don't need to have ImageMagick installed locally, as it is already baked
 into the Docker image.
