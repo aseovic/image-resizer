@@ -1,4 +1,8 @@
+import fs from 'fs';
 import path from 'path';
+import fileUpload from 'express-fileupload';
+import resize from 'im-resize';
+import uuid from 'uuid/v4';
 import { Server } from 'http';
 import Express from 'express';
 import React from 'react';
@@ -8,18 +12,54 @@ import routes from './routes';
 import NotFoundPage from './components/NotFoundPage';
 
 // initialize the server and configure support for ejs templates
-const app = new Express();
+const app    = new Express();
 const server = new Server(app);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // define the folder that will be used for static assets
-app.use(Express.static(path.join(__dirname, 'static')));
+const staticPath = path.join(__dirname, 'static');
+app.use(Express.static(staticPath));
+
+// configure file-upload middleware
+app.use(fileUpload());
+
+// resize API
+app.post('/resize', function (req, res) {
+  const inFile  = req.files.inputFile;
+  const outFile = path.join(staticPath, 'images', uuid() + '-' + inFile.name);
+
+  inFile.mv(outFile, function (err) {
+    if (err) {
+      res.status(500).send(err);
+    }
+    else {
+      const image  = {path: outFile};
+      const output = {
+        versions: [
+          {
+            suffix:    '-resized',
+            maxHeight: req.body.height,
+            maxWidth:  req.body.width
+          }
+        ]
+      };
+
+      resize(image, output, function (error, versions) {
+        if (error) {
+          res.status(500).send(err);
+        }
+        console.log('Resized: ' + versions[0].path);
+        res.send({url: path.relative(staticPath, versions[0].path)});
+      });
+    }
+  });
+});
 
 // universal routing and rendering
 app.get('*', (req, res) => {
   match(
-    { routes, location: req.url },
+    {routes, location: req.url},
     (err, redirectLocation, renderProps) => {
 
       // in case of error display the error message
@@ -37,21 +77,22 @@ app.get('*', (req, res) => {
       if (renderProps) {
         // if the current route matched we have renderProps
         markup = renderToString(<RouterContext {...renderProps}/>);
-      } else {
+      }
+      else {
         // otherwise we can render a 404 page
         markup = renderToString(<NotFoundPage/>);
         res.status(404);
       }
 
       // render the index template with the embedded React markup
-      return res.render('index', { markup });
+      return res.render('index', {markup});
     }
   );
 });
 
 // start the server
 const port = process.env.PORT || 3000;
-const env = process.env.NODE_ENV || 'production';
+const env  = process.env.NODE_ENV || 'production';
 server.listen(port, err => {
   if (err) {
     return console.error(err);
